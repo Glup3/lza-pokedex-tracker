@@ -13,6 +13,14 @@ const config = defineConfig({
 			'@': fileURLToPath(new URL('./src', import.meta.url)),
 		},
 	},
+	ssr: {
+		noExternal: ['@convex-dev/better-auth'],
+	},
+	server: {
+		// Try port 3000 first, but find an available port if it's in use
+		port: 3000,
+		strict: false,
+	},
 	plugins: [
 		devtools(),
 		nitro(),
