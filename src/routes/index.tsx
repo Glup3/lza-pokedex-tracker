@@ -1,11 +1,17 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
+import { Header, HEADER_HEIGHT } from '../components/Header'
 
 export const Route = createFileRoute('/')({ component: HomePage })
 
 function HomePage() {
 	return (
-		<div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center px-6">
+		<>
+			<Header />
+			<div
+				className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center px-6"
+				style={{ paddingTop: HEADER_HEIGHT }}
+			>
 			<div className="max-w-2xl w-full text-center">
 				<h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4">
 					POKÉDEX
@@ -22,5 +28,6 @@ function HomePage() {
 				</Link>
 			</div>
 		</div>
+		</>
 	)
 }
