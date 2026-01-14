@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { Header, HEADER_HEIGHT } from '../components/Header'
 import { useConvexAuth, useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { authClient } from '../../lib/auth-client'
+import { authClient } from '../lib/auth-client'
+import { useEffect } from 'react'
 
 export const Route = createFileRoute('/pokedex')({
 	component: PokedexTracker,
@@ -169,6 +170,28 @@ function PokedexTracker() {
 	const { isAuthenticated, isLoading: authLoading } = useConvexAuth()
 	const caughtPokemon = useQuery(api.caughtPokemon.getCaughtPokemon, {})
 	const toggleCaught = useMutation(api.caughtPokemon.toggleCaught)
+
+	// Debug auth state
+	useEffect(() => {
+		const debugAuth = async () => {
+			console.log('=== Auth Debug ===')
+			console.log('isAuthenticated (useConvexAuth):', isAuthenticated)
+			console.log('authLoading:', authLoading)
+
+			// Check Better Auth session
+			const session = await authClient.getSession()
+			console.log('Better Auth session:', session)
+
+			// Try to get Convex token
+			try {
+				const convexToken = await authClient.convex.token()
+				console.log('Convex token result:', convexToken)
+			} catch (e) {
+				console.error('Error getting Convex token:', e)
+			}
+		}
+		debugAuth()
+	}, [isAuthenticated, authLoading])
 
 	const [searchQuery, setSearchQuery] = useState('')
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
