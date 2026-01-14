@@ -60,7 +60,7 @@ function PokedexTracker() {
 		})
 		.sort((a, b) => {
 			if (sortBy === 'number') {
-				return parseInt(a.number) - parseInt(b.number)
+				return a.regionalNumber - b.regionalNumber
 			}
 			if (sortBy === 'name') {
 				return a.name.localeCompare(b.name)
@@ -243,7 +243,7 @@ function PokemonCard({ pokemon }: { pokemon: typeof mockPokemon[0] }) {
 			{/* Info */}
 			<div className="mt-auto">
 				<p className="text-[10px] text-neutral-600 font-mono tabular-nums mb-0.5">
-					{pokemon.number}
+					#{pokemon.regionalNumber}
 				</p>
 				<p className="text-sm font-light tracking-tight mb-2">{pokemon.name}</p>
 				<p className="text-[10px] text-neutral-500 leading-tight">
