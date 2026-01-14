@@ -19,7 +19,7 @@ const config = defineConfig({
 	server: {
 		// Try port 3000 first, but find an available port if it's in use
 		port: 3000,
-		strict: false,
+		strictPort: false,
 	},
 	plugins: [
 		devtools(),

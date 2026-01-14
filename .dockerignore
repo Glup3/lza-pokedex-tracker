@@ -1,0 +1,7 @@
+.tanstack/
+.nitro/
+.output/
+node_modules/
+
+.gitignore
+README.md
