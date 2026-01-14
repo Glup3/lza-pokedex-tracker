@@ -7,7 +7,9 @@ export const Route = createFileRoute('/pokedex')({
 	component: PokedexTracker,
 })
 
-const mockPokemon = POKEMON_DATA.map((pokemon) => ({
+const mockPokemon = POKEMON_DATA
+	.filter((p) => !p.name.includes('-') && p.id <= 364)
+	.map((pokemon) => ({
 		...pokemon,
 		location: 'Unknown',
 		caught: false,

@@ -49,12 +49,6 @@ def parse_pokemon_data(input_file: str) -> list[dict]:
                 regional_number = int(match.group(3))
                 stage = match.group(4)
 
-                # Filter out alternate forms (mega evolutions, etc.)
-                # Names with suffixes like -1, -2, or local_number > 364
-                if '-' in name or local_number > 364:
-                    current_entry = {}  # Skip this entry
-                    continue
-
                 current_entry = {
                     'id': local_number,  # Use local number as id
                     'name': name,
@@ -116,7 +110,7 @@ def main():
 
     print(f"Parsing {input_file}...")
     pokemon_list = parse_pokemon_data(input_file)
-    print(f"Found {len(pokemon_list)} Pokemon entries (base forms only)")
+    print(f"Found {len(pokemon_list)} Pokemon entries (all forms)")
 
     print(f"Generating {output_file}...")
     typescript_content = generate_typescript(pokemon_list)
