@@ -336,10 +336,10 @@ export const POKEMON_DATA = [
     id: 38,
     name: 'Flabébé',
     number: '038',
-    regionalNumber: 1,
+    regionalNumber: 669,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Fairy'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/669.png'
   },
   {
     id: 39,
@@ -390,10 +390,10 @@ export const POKEMON_DATA = [
     id: 44,
     name: 'Meowstic',
     number: '044',
-    regionalNumber: 1,
+    regionalNumber: 678,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Psychic'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/678.png'
   },
   {
     id: 45,
@@ -651,10 +651,10 @@ export const POKEMON_DATA = [
     id: 73,
     name: 'Aegislash',
     number: '073',
-    regionalNumber: 1,
+    regionalNumber: 681,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Steel', 'Ghost'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/681.png'
   },
   {
     id: 74,
@@ -1830,19 +1830,19 @@ export const POKEMON_DATA = [
     id: 204,
     name: 'Pumpkaboo',
     number: '204',
-    regionalNumber: 1,
+    regionalNumber: 710,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Ghost', 'Grass'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/710.png'
   },
   {
     id: 205,
     name: 'Gourgeist',
     number: '205',
-    regionalNumber: 1,
+    regionalNumber: 711,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Ghost', 'Grass'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/711.png'
   },
   {
     id: 206,
@@ -2064,10 +2064,10 @@ export const POKEMON_DATA = [
     id: 230,
     name: 'Zygarde',
     number: '230',
-    regionalNumber: 1,
+    regionalNumber: 718,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Dragon', 'Ground'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/718.png'
   },
   {
     id: 231,
@@ -2145,19 +2145,19 @@ export const POKEMON_DATA = [
     id: 239,
     name: 'Farfetch’d',
     number: '239',
-    regionalNumber: 1,
+    regionalNumber: 83,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Normal', 'Flying'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/83.png'
   },
   {
     id: 240,
     name: 'Sirfetch’d',
     number: '240',
-    regionalNumber: 1,
+    regionalNumber: 865,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Fighting', 'Flying'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/865.png'
   },
   {
     id: 241,
@@ -2361,10 +2361,10 @@ export const POKEMON_DATA = [
     id: 263,
     name: 'Tatsugiri',
     number: '263',
-    regionalNumber: 1,
+    regionalNumber: 978,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Dragon', 'Water'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/978.png'
   },
   {
     id: 264,
@@ -2550,10 +2550,10 @@ export const POKEMON_DATA = [
     id: 284,
     name: 'Indeedee',
     number: '284',
-    regionalNumber: 1,
+    regionalNumber: 876,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Psychic', 'Normal'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/876.png'
   },
   {
     id: 285,
@@ -2694,10 +2694,10 @@ export const POKEMON_DATA = [
     id: 300,
     name: 'Mimikyu',
     number: '300',
-    regionalNumber: 1,
+    regionalNumber: 778,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Ghost', 'Fairy'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/778.png'
   },
   {
     id: 301,
@@ -2712,10 +2712,10 @@ export const POKEMON_DATA = [
     id: 302,
     name: 'Morpeko',
     number: '302',
-    regionalNumber: 1,
+    regionalNumber: 877,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Electric', 'Dark'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/877.png'
   },
   {
     id: 303,
@@ -2856,10 +2856,10 @@ export const POKEMON_DATA = [
     id: 318,
     name: 'Squawkabilly',
     number: '318',
-    regionalNumber: 1,
+    regionalNumber: 931,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Normal', 'Flying'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/931.png'
   },
   {
     id: 319,
@@ -3009,10 +3009,10 @@ export const POKEMON_DATA = [
     id: 335,
     name: 'Toxtricity',
     number: '335',
-    regionalNumber: 1,
+    regionalNumber: 849,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Electric', 'Poison'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/849.png'
   },
   {
     id: 336,
@@ -3054,28 +3054,28 @@ export const POKEMON_DATA = [
     id: 340,
     name: 'Mime Jr.',
     number: '340',
-    regionalNumber: 1,
+    regionalNumber: 439,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Psychic', 'Fairy'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/439.png'
   },
   {
     id: 341,
     name: 'Mr. Mime',
     number: '341',
-    regionalNumber: 1,
+    regionalNumber: 122,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Psychic', 'Fairy'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/122.png'
   },
   {
     id: 342,
     name: 'Mr. Rime',
     number: '342',
-    regionalNumber: 1,
+    regionalNumber: 866,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Psychic', 'Ice'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/866.png'
   },
   {
     id: 343,
@@ -3144,19 +3144,19 @@ export const POKEMON_DATA = [
     id: 350,
     name: 'Keldeo',
     number: '350',
-    regionalNumber: 1,
+    regionalNumber: 647,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Water', 'Fighting'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/647.png'
   },
   {
     id: 351,
     name: 'Meloetta',
     number: '351',
-    regionalNumber: 1,
+    regionalNumber: 648,
     classification: '1',
-    types: ['Unknown'],
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    types: ['Normal', 'Psychic'],
+    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/648.png'
   },
   {
     id: 352,
