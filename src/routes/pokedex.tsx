@@ -71,7 +71,7 @@ function PokedexTracker() {
 		})
 		.sort((a, b) => {
 			if (sortBy === 'number') {
-				return a.regionalNumber - b.regionalNumber
+				return parseInt(a.number, 10) - parseInt(b.number, 10)
 			}
 			if (sortBy === 'name') {
 				return a.name.localeCompare(b.name)
