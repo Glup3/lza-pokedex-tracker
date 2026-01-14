@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { Header, HEADER_HEIGHT } from '../components/Header'
 import { useConvexAuth, useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { authClient } from '../lib/auth-client'
-import { useEffect } from 'react'
+
+const SIGNIN_URL = '/api/auth/signin'
 
 export const Route = createFileRoute('/pokedex')({
 	component: PokedexTracker,
@@ -171,33 +171,13 @@ function PokedexTracker() {
 	const caughtPokemon = useQuery(api.caughtPokemon.getCaughtPokemon, {})
 	const toggleCaught = useMutation(api.caughtPokemon.toggleCaught)
 
-	// Debug auth state
-	useEffect(() => {
-		const debugAuth = async () => {
-			console.log('=== Auth Debug ===')
-			console.log('isAuthenticated (useConvexAuth):', isAuthenticated)
-			console.log('authLoading:', authLoading)
-
-			// Check Better Auth session
-			const session = await authClient.getSession()
-			console.log('Better Auth session:', session)
-
-			// Try to get Convex token
-			try {
-				const convexToken = await authClient.convex.token()
-				console.log('Convex token result:', convexToken)
-			} catch (e) {
-				console.error('Error getting Convex token:', e)
-			}
-		}
-		debugAuth()
-	}, [isAuthenticated, authLoading])
-
 	const [searchQuery, setSearchQuery] = useState('')
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 	const [showOnlyCaught, setShowOnlyCaught] = useState(false)
 	const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
 	const [sortBy, setSortBy] = useState<'number' | 'name' | 'location'>('number')
+	const [togglingPokemonId, setTogglingPokemonId] = useState<number | null>(null)
+	const [error, setError] = useState<string | null>(null)
 
 	const caughtPokemonSet = new Set(caughtPokemon ?? [])
 
@@ -217,7 +197,7 @@ function PokedexTracker() {
 		})
 		.sort((a, b) => {
 			if (sortBy === 'number') {
-				return parseInt(a.number) - parseInt(b.number)
+				return parseInt(a.number, 10) - parseInt(b.number, 10)
 			}
 			if (sortBy === 'name') {
 				return a.name.localeCompare(b.name)
@@ -228,10 +208,20 @@ function PokedexTracker() {
 	const caughtCount = caughtPokemonSet.size
 
 	const handleToggleCaught = async (pokemonId: number) => {
-		if (!isAuthenticated) {
+		if (!isAuthenticated || togglingPokemonId !== null) {
 			return
 		}
-		await toggleCaught({ pokemonId })
+
+		setError(null)
+		setTogglingPokemonId(pokemonId)
+
+		try {
+			await toggleCaught({ pokemonId })
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Failed to update caught status')
+		} finally {
+			setTogglingPokemonId(null)
+		}
 	}
 
 	return (
@@ -264,7 +254,7 @@ function PokedexTracker() {
 						) : !isAuthenticated ? (
 							<p className="text-xs text-neutral-600">
 								<a
-									href="/api/auth/signin"
+									href={SIGNIN_URL}
 									className="text-neutral-400 hover:text-white underline"
 								>
 									Sign in
@@ -273,6 +263,9 @@ function PokedexTracker() {
 							</p>
 						) : (
 							<p className="text-xs text-neutral-500">Tracking your collection</p>
+						)}
+						{error && (
+							<p className="text-xs text-red-500 mt-2">{error}</p>
 						)}
 					</div>
 				</div>
@@ -386,6 +379,7 @@ function PokedexTracker() {
 								pokemon={pokemon}
 								isCaught={caughtPokemonSet.has(pokemon.id)}
 								isAuthenticated={isAuthenticated}
+								isToggling={togglingPokemonId === pokemon.id}
 								onToggleCaught={() => handleToggleCaught(pokemon.id)}
 							/>
 						))}
@@ -408,24 +402,42 @@ function PokemonCard({
 	pokemon,
 	isCaught,
 	isAuthenticated,
+	isToggling,
 	onToggleCaught,
 }: {
 	pokemon: typeof mockPokemon[0]
 	isCaught: boolean
 	isAuthenticated: boolean
+	isToggling: boolean
 	onToggleCaught: () => void
 }) {
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault()
+			if (isAuthenticated) {
+				onToggleCaught()
+			}
+		}
+	}
+
 	return (
 		<div
 			className="group relative bg-[#0a0a0a] p-4 hover:bg-white/[0.02] transition-colors flex flex-col cursor-pointer"
-			onClick={isAuthenticated ? onToggleCaught : undefined}
+			onClick={isAuthenticated && !isToggling ? onToggleCaught : undefined}
+			onKeyDown={handleKeyDown}
+			role={isAuthenticated ? 'button' : undefined}
+			tabIndex={isAuthenticated ? 0 : undefined}
+			aria-pressed={isAuthenticated ? isCaught : undefined}
+			aria-label={isAuthenticated ? `${pokemon.name}, ${isCaught ? 'caught' : 'not caught'}` : pokemon.name}
 		>
 			{/* Status indicator */}
 			<div className="flex justify-between items-start mb-3">
 				{pokemon.favorite && (
 					<span className="w-1.5 h-1.5 bg-[#d4c86a] rounded-full"></span>
 				)}
-				{isCaught ? (
+				{isToggling ? (
+					<span className="w-1.5 h-1.5 bg-neutral-600 rounded-full ml-auto animate-pulse"></span>
+				) : isCaught ? (
 					<span className="w-1.5 h-1.5 bg-white rounded-full ml-auto"></span>
 				) : (
 					<span className="w-1.5 h-1.5 border border-neutral-700 rounded-full ml-auto"></span>
@@ -452,10 +464,10 @@ function PokemonCard({
 				</p>
 			</div>
 
-			{/* Tooltip for non-authenticated users */}
+			{/* Badge for non-authenticated users - less intrusive than overlay */}
 			{!isAuthenticated && (
-				<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-					<p className="text-xs text-white">Sign in to track</p>
+				<div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+					<p className="text-[10px] text-white">Sign in to track</p>
 				</div>
 			)}
 		</div>
