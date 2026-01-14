@@ -4,7 +4,7 @@ on:
     branches: ["main"]  # Trigger on pushes to main branch
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: "Glup3/lza-pokedex-tracker"
+  IMAGE_NAME: "glup3/lza-pokedex-tracker"
 
 jobs:
   build-and-deploy:
