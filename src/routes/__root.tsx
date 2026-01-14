@@ -13,8 +13,6 @@ import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import type { ConvexQueryClient } from '@convex-dev/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 
-import ConvexProvider from '../integrations/convex/provider'
-
 import appCss from '../styles.css?url'
 import { authClient } from '../lib/auth-client'
 import { getToken } from '../lib/auth-server'
@@ -87,20 +85,18 @@ function RootDocument() {
 				<HeadContent />
 			</head>
 			<body>
-				<ConvexProvider>
-					<Outlet />
-					<TanStackDevtools
-						config={{
-							position: 'bottom-right',
-						}}
-						plugins={[
-							{
-								name: 'Tanstack Router',
-								render: <TanStackRouterDevtoolsPanel />,
-							},
-						]}
-					/>
-				</ConvexProvider>
+				<Outlet />
+				<TanStackDevtools
+					config={{
+						position: 'bottom-right',
+					}}
+					plugins={[
+						{
+							name: 'Tanstack Router',
+							render: <TanStackRouterDevtoolsPanel />,
+						},
+					]}
+				/>
 				<Scripts />
 			</body>
 		</html>
