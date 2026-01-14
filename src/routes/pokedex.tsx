@@ -1,6 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Header, HEADER_HEIGHT } from '../components/Header'
+import { useConvexAuth, useMutation, useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import { authClient } from '../../lib/auth-client'
 
 export const Route = createFileRoute('/pokedex')({
 	component: PokedexTracker,
@@ -163,11 +166,17 @@ const allTypes = [
 ]
 
 function PokedexTracker() {
+	const { isAuthenticated, isLoading: authLoading } = useConvexAuth()
+	const caughtPokemon = useQuery(api.caughtPokemon.getCaughtPokemon, {})
+	const toggleCaught = useMutation(api.caughtPokemon.toggleCaught)
+
 	const [searchQuery, setSearchQuery] = useState('')
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 	const [showOnlyCaught, setShowOnlyCaught] = useState(false)
 	const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
 	const [sortBy, setSortBy] = useState<'number' | 'name' | 'location'>('number')
+
+	const caughtPokemonSet = new Set(caughtPokemon ?? [])
 
 	const filteredPokemon = mockPokemon
 		.filter((pokemon) => {
@@ -178,7 +187,8 @@ function PokedexTracker() {
 			const matchesType =
 				selectedTypes.length === 0 ||
 				pokemon.types.some((type) => selectedTypes.includes(type))
-			const matchesCaught = !showOnlyCaught || pokemon.caught
+			const isCaught = caughtPokemonSet.has(pokemon.id)
+			const matchesCaught = !showOnlyCaught || isCaught
 			const matchesFavorites = !showOnlyFavorites || pokemon.favorite
 			return matchesSearch && matchesType && matchesCaught && matchesFavorites
 		})
@@ -192,7 +202,14 @@ function PokedexTracker() {
 			return a.location.localeCompare(b.location)
 		})
 
-	const caughtCount = mockPokemon.filter((p) => p.caught).length
+	const caughtCount = caughtPokemonSet.size
+
+	const handleToggleCaught = async (pokemonId: number) => {
+		if (!isAuthenticated) {
+			return
+		}
+		await toggleCaught({ pokemonId })
+	}
 
 	return (
 		<>
@@ -216,6 +233,24 @@ function PokedexTracker() {
 								Caught
 							</p>
 						</div>
+					</div>
+					{/* Auth Status */}
+					<div className="mt-4">
+						{authLoading ? (
+							<p className="text-xs text-neutral-600">Loading...</p>
+						) : !isAuthenticated ? (
+							<p className="text-xs text-neutral-600">
+								<a
+									href="/api/auth/signin"
+									className="text-neutral-400 hover:text-white underline"
+								>
+									Sign in
+								</a>
+								{' '}to track your collection
+							</p>
+						) : (
+							<p className="text-xs text-neutral-500">Tracking your collection</p>
+						)}
 					</div>
 				</div>
 			</header>
@@ -323,7 +358,13 @@ function PokedexTracker() {
 				) : (
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-px bg-white/5">
 						{filteredPokemon.map((pokemon) => (
-							<PokemonCard key={pokemon.id} pokemon={pokemon} />
+							<PokemonCard
+								key={pokemon.id}
+								pokemon={pokemon}
+								isCaught={caughtPokemonSet.has(pokemon.id)}
+								isAuthenticated={isAuthenticated}
+								onToggleCaught={() => handleToggleCaught(pokemon.id)}
+							/>
 						))}
 					</div>
 				)}
@@ -340,15 +381,28 @@ function PokedexTracker() {
 	)
 }
 
-function PokemonCard({ pokemon }: { pokemon: typeof mockPokemon[0] }) {
+function PokemonCard({
+	pokemon,
+	isCaught,
+	isAuthenticated,
+	onToggleCaught,
+}: {
+	pokemon: typeof mockPokemon[0]
+	isCaught: boolean
+	isAuthenticated: boolean
+	onToggleCaught: () => void
+}) {
 	return (
-		<div className="group bg-[#0a0a0a] p-4 hover:bg-white/[0.02] transition-colors cursor-pointer flex flex-col">
+		<div
+			className="group relative bg-[#0a0a0a] p-4 hover:bg-white/[0.02] transition-colors flex flex-col cursor-pointer"
+			onClick={isAuthenticated ? onToggleCaught : undefined}
+		>
 			{/* Status indicator */}
 			<div className="flex justify-between items-start mb-3">
 				{pokemon.favorite && (
 					<span className="w-1.5 h-1.5 bg-[#d4c86a] rounded-full"></span>
 				)}
-				{pokemon.caught ? (
+				{isCaught ? (
 					<span className="w-1.5 h-1.5 bg-white rounded-full ml-auto"></span>
 				) : (
 					<span className="w-1.5 h-1.5 border border-neutral-700 rounded-full ml-auto"></span>
@@ -374,6 +428,13 @@ function PokemonCard({ pokemon }: { pokemon: typeof mockPokemon[0] }) {
 					{pokemon.types.join(' · ')}
 				</p>
 			</div>
+
+			{/* Tooltip for non-authenticated users */}
+			{!isAuthenticated && (
+				<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+					<p className="text-xs text-white">Sign in to track</p>
+				</div>
+			)}
 		</div>
 	)
 }

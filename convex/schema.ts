@@ -11,4 +11,11 @@ export default defineSchema({
     text: v.string(),
     completed: v.boolean(),
   }),
+  caughtPokemon: defineTable({
+    userId: v.string(),
+    pokemonId: v.number(),
+    caughtAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_user_pokemon', ['userId', 'pokemonId']),
 })
