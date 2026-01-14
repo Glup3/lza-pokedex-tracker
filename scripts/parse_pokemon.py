@@ -28,39 +28,42 @@ def parse_pokemon_data(input_file: str) -> list[dict]:
         input_file: Path to the personal.txt file
 
     Returns:
-        List of Pokemon dictionaries with id, name, number, regionalNumber, types, image
+        List of Pokemon dictionaries with id, name, number, regionalNumber, types, image, classification
     """
     pokemon_list = []
     current_entry = {}
-    entry_id = 1
 
-    pokemon_entry_pattern = re.compile(r'^(\d+) - (.+?) #(\d+)')
+    # Pattern to match Pokemon entry line (e.g., "001 - Bulbasaur #148 (Stage: 1)")
+    pokemon_entry_pattern = re.compile(r'^(\d+) - (.+?) #(\d+).*\(Stage: (\d+)\)')
     type_pattern = re.compile(r'^Type: (.+)')
 
     with open(input_file, 'r') as f:
         for line in f:
             line = line.strip()
 
-            # Check for Pokemon entry line (e.g., "001 - Bulbasaur #148 (Stage: 1)")
+            # Check for Pokemon entry line
             match = pokemon_entry_pattern.match(line)
             if match:
-                # Save previous entry if exists
-                if current_entry:
-                    pokemon_list.append(current_entry)
-
-                local_number = match.group(1)
+                local_number = int(match.group(1))
                 name = match.group(2)
                 regional_number = int(match.group(3))
+                stage = match.group(4)
+
+                # Filter out alternate forms (mega evolutions, etc.)
+                # Names with suffixes like -1, -2, or local_number > 364
+                if '-' in name or local_number > 364:
+                    current_entry = {}  # Skip this entry
+                    continue
 
                 current_entry = {
-                    'id': entry_id,
+                    'id': local_number,  # Use local number as id
                     'name': name,
-                    'number': local_number,
+                    'number': f'{local_number:03d}',  # Zero-padded string
                     'regionalNumber': regional_number,
+                    'classification': stage,  # Stage: 1, 2, 3, etc.
                     'types': [],
-                    'image': f'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{int(local_number)}.png'
+                    'image': f'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{local_number}.png'
                 }
-                entry_id += 1
                 continue
 
             # Check for Type line
@@ -74,9 +77,10 @@ def parse_pokemon_data(input_file: str) -> list[dict]:
                     types = [types_str.strip()]
                 current_entry['types'] = types
 
-    # Add last entry
-    if current_entry:
-        pokemon_list.append(current_entry)
+                # Only add to list if we have all required fields
+                if current_entry.get('id'):
+                    pokemon_list.append(current_entry)
+                current_entry = {}
 
     return pokemon_list
 
@@ -92,6 +96,7 @@ def generate_typescript(pokemon_list: list[dict]) -> str:
         lines.append(f"    name: '{pokemon['name']}',")
         lines.append(f"    number: '{pokemon['number']}',")
         lines.append(f"    regionalNumber: {pokemon['regionalNumber']},")
+        lines.append(f"    classification: '{pokemon['classification']}',")
         lines.append(f'    types: {types_str},')
         lines.append(f"    image: '{pokemon['image']}'")
         lines.append(f'  }},')
@@ -111,7 +116,7 @@ def main():
 
     print(f"Parsing {input_file}...")
     pokemon_list = parse_pokemon_data(input_file)
-    print(f"Found {len(pokemon_list)} Pokemon entries")
+    print(f"Found {len(pokemon_list)} Pokemon entries (base forms only)")
 
     print(f"Generating {output_file}...")
     typescript_content = generate_typescript(pokemon_list)
