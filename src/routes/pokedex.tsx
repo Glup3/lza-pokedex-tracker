@@ -2,6 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Header, HEADER_HEIGHT } from '../components/Header'
 import { POKEMON_DATA } from '../data/pokemon-data'
+import { useConvexAuth, useMutation, useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+
+const SIGNIN_URL = '/api/auth/signin'
 
 export const Route = createFileRoute('/pokedex')({
 	component: PokedexTracker,
@@ -37,11 +41,19 @@ const allTypes = [
 ]
 
 function PokedexTracker() {
+	const { isAuthenticated, isLoading: authLoading } = useConvexAuth()
+	const caughtPokemon = useQuery(api.caughtPokemon.getCaughtPokemon, {})
+	const toggleCaught = useMutation(api.caughtPokemon.toggleCaught)
+
 	const [searchQuery, setSearchQuery] = useState('')
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 	const [showOnlyCaught, setShowOnlyCaught] = useState(false)
 	const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
 	const [sortBy, setSortBy] = useState<'number' | 'name' | 'location'>('number')
+	const [togglingPokemonId, setTogglingPokemonId] = useState<number | null>(null)
+	const [error, setError] = useState<string | null>(null)
+
+	const caughtPokemonSet = new Set(caughtPokemon ?? [])
 
 	const filteredPokemon = mockPokemon
 		.filter((pokemon) => {
@@ -52,7 +64,8 @@ function PokedexTracker() {
 			const matchesType =
 				selectedTypes.length === 0 ||
 				pokemon.types.some((type) => selectedTypes.includes(type))
-			const matchesCaught = !showOnlyCaught || pokemon.caught
+			const isCaught = caughtPokemonSet.has(pokemon.id)
+			const matchesCaught = !showOnlyCaught || isCaught
 			const matchesFavorites = !showOnlyFavorites || pokemon.favorite
 			return matchesSearch && matchesType && matchesCaught && matchesFavorites
 		})
@@ -66,7 +79,24 @@ function PokedexTracker() {
 			return a.location.localeCompare(b.location)
 		})
 
-	const caughtCount = mockPokemon.filter((p) => p.caught).length
+	const caughtCount = caughtPokemonSet.size
+
+	const handleToggleCaught = async (pokemonId: number) => {
+		if (!isAuthenticated || togglingPokemonId !== null) {
+			return
+		}
+
+		setError(null)
+		setTogglingPokemonId(pokemonId)
+
+		try {
+			await toggleCaught({ pokemonId })
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Failed to update caught status')
+		} finally {
+			setTogglingPokemonId(null)
+		}
+	}
 
 	return (
 		<>
@@ -90,6 +120,27 @@ function PokedexTracker() {
 								Caught
 							</p>
 						</div>
+					</div>
+					{/* Auth Status */}
+					<div className="mt-4">
+						{authLoading ? (
+							<p className="text-xs text-neutral-600">Loading...</p>
+						) : !isAuthenticated ? (
+							<p className="text-xs text-neutral-600">
+								<a
+									href={SIGNIN_URL}
+									className="text-neutral-400 hover:text-white underline"
+								>
+									Sign in
+								</a>
+								{' '}to track your collection
+							</p>
+						) : (
+							<p className="text-xs text-neutral-500">Tracking your collection</p>
+						)}
+						{error && (
+							<p className="text-xs text-red-500 mt-2">{error}</p>
+						)}
 					</div>
 				</div>
 			</header>
@@ -197,7 +248,14 @@ function PokedexTracker() {
 				) : (
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-px bg-white/5">
 						{filteredPokemon.map((pokemon) => (
-							<PokemonCard key={pokemon.id} pokemon={pokemon} />
+							<PokemonCard
+								key={pokemon.id}
+								pokemon={pokemon}
+								isCaught={caughtPokemonSet.has(pokemon.id)}
+								isAuthenticated={isAuthenticated}
+								isToggling={togglingPokemonId === pokemon.id}
+								onToggleCaught={() => handleToggleCaught(pokemon.id)}
+							/>
 						))}
 					</div>
 				)}
@@ -214,15 +272,46 @@ function PokedexTracker() {
 	)
 }
 
-function PokemonCard({ pokemon }: { pokemon: typeof mockPokemon[0] }) {
+function PokemonCard({
+	pokemon,
+	isCaught,
+	isAuthenticated,
+	isToggling,
+	onToggleCaught,
+}: {
+	pokemon: typeof mockPokemon[0]
+	isCaught: boolean
+	isAuthenticated: boolean
+	isToggling: boolean
+	onToggleCaught: () => void
+}) {
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault()
+			if (isAuthenticated) {
+				onToggleCaught()
+			}
+		}
+	}
+
 	return (
-		<div className="group bg-[#0a0a0a] p-4 hover:bg-white/[0.02] transition-colors cursor-pointer flex flex-col">
+		<div
+			className="group relative bg-[#0a0a0a] p-4 hover:bg-white/[0.02] transition-colors flex flex-col cursor-pointer"
+			onClick={isAuthenticated && !isToggling ? onToggleCaught : undefined}
+			onKeyDown={handleKeyDown}
+			role={isAuthenticated ? 'button' : undefined}
+			tabIndex={isAuthenticated ? 0 : undefined}
+			aria-pressed={isAuthenticated ? isCaught : undefined}
+			aria-label={isAuthenticated ? `${pokemon.name}, ${isCaught ? 'caught' : 'not caught'}` : pokemon.name}
+		>
 			{/* Status indicator */}
 			<div className="flex justify-between items-start mb-3">
 				{pokemon.favorite && (
 					<span className="w-1.5 h-1.5 bg-[#d4c86a] rounded-full"></span>
 				)}
-				{pokemon.caught ? (
+				{isToggling ? (
+					<span className="w-1.5 h-1.5 bg-neutral-600 rounded-full ml-auto animate-pulse"></span>
+				) : isCaught ? (
 					<span className="w-1.5 h-1.5 bg-white rounded-full ml-auto"></span>
 				) : (
 					<span className="w-1.5 h-1.5 border border-neutral-700 rounded-full ml-auto"></span>
@@ -248,6 +337,13 @@ function PokemonCard({ pokemon }: { pokemon: typeof mockPokemon[0] }) {
 					{pokemon.types.join(' · ')}
 				</p>
 			</div>
+
+			{/* Badge for non-authenticated users - less intrusive than overlay */}
+			{!isAuthenticated && (
+				<div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+					<p className="text-[10px] text-white">Sign in to track</p>
+				</div>
+			)}
 		</div>
 	)
 }
