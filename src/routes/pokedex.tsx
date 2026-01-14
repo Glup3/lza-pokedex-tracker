@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import { Header, HEADER_HEIGHT } from '../components/Header'
 import { POKEMON_DATA } from '../data/pokemon-data'
 
 export const Route = createFileRoute('/pokedex')({
@@ -70,9 +71,11 @@ function PokedexTracker() {
 	const caughtCount = mockPokemon.filter((p) => p.caught).length
 
 	return (
-		<div className="min-h-screen bg-[#0a0a0a] text-white">
-			{/* Header */}
-			<header className="border-b border-white/10">
+		<>
+			<Header />
+			<div className="min-h-screen bg-[#0a0a0a] text-white" style={{ paddingTop: HEADER_HEIGHT }}>
+				{/* Header */}
+				<header className="border-b border-white/10">
 				<div className="max-w-6xl mx-auto px-6 py-8">
 					<div className="flex items-baseline justify-between">
 						<div>
@@ -209,6 +212,7 @@ function PokedexTracker() {
 				</div>
 			</footer>
 		</div>
+		</>
 	)
 }
 
