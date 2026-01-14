@@ -2,6 +2,7 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import {
 	HeadContent,
+	Outlet,
 	Scripts,
 	createRootRouteWithContext,
 	useRouteContext,
@@ -79,7 +80,7 @@ function RootComponent() {
 	)
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument() {
 	return (
 		<html lang="en">
 			<head>
@@ -87,7 +88,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				<Header />
-				{children}
+				<Outlet />
 				<TanStackDevtools
 					config={{
 						position: 'bottom-right',
