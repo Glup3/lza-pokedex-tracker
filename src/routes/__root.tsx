@@ -13,7 +13,7 @@ import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import type { ConvexQueryClient } from '@convex-dev/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 
-import Header from '../components/Header'
+import ConvexProvider from '../integrations/convex/provider'
 
 import appCss from '../styles.css?url'
 import { authClient } from '../lib/auth-client'
@@ -38,7 +38,7 @@ export const Route = createRootRouteWithContext<{
 				content: 'width=device-width, initial-scale=1',
 			},
 			{
-				title: 'TanStack Start Starter',
+				title: 'Pokedex Tracker',
 			},
 		],
 		links: [
@@ -87,19 +87,20 @@ function RootDocument() {
 				<HeadContent />
 			</head>
 			<body>
-				<Header />
-				<Outlet />
-				<TanStackDevtools
-					config={{
-						position: 'bottom-right',
-					}}
-					plugins={[
-						{
-							name: 'Tanstack Router',
-							render: <TanStackRouterDevtoolsPanel />,
-						},
-					]}
-				/>
+				<ConvexProvider>
+					<Outlet />
+					<TanStackDevtools
+						config={{
+							position: 'bottom-right',
+						}}
+						plugins={[
+							{
+								name: 'Tanstack Router',
+								render: <TanStackRouterDevtoolsPanel />,
+							},
+						]}
+					/>
+				</ConvexProvider>
 				<Scripts />
 			</body>
 		</html>
