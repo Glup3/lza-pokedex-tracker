@@ -12,6 +12,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
     steps:
       - uses: actions/checkout@v4
 
