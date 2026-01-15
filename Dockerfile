@@ -7,6 +7,8 @@ RUN corepack enable
 
 FROM base AS prod
 WORKDIR /app
+ARG VITE_CONVEX_URL
+ENV VITE_CONVEX_URL=$VITE_CONVEX_URL
 
 COPY package.json pnpm-lock.yaml /app
 RUN pnpm install --frozen-lockfile
