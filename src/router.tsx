@@ -5,6 +5,7 @@ import { ConvexQueryClient } from '@convex-dev/react-query'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
+import { clientEnv } from './config/env-client'
 
 // Create a new router instance
 export const getRouter = () => {
@@ -12,12 +13,7 @@ export const getRouter = () => {
 		notifyManager.setScheduler(window.requestAnimationFrame)
 	}
 
-	const convexUrl = (import.meta as any).env.VITE_CONVEX_URL!
-	if (!convexUrl) {
-		throw new Error('VITE_CONVEX_URL is not set')
-	}
-
-	const convexQueryClient = new ConvexQueryClient(convexUrl, {
+	const convexQueryClient = new ConvexQueryClient(clientEnv.VITE_CONVEX_URL, {
 		expectAuth: true,
 	})
 

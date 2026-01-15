@@ -6,8 +6,15 @@ import { components } from './_generated/api'
 import { query } from './_generated/server'
 import type { GenericCtx } from '@convex-dev/better-auth'
 import type { DataModel } from './_generated/dataModel'
+import { z } from 'zod'
 
-const siteUrl = process.env.SITE_URL!
+const envSchema = z.object({
+	GITHUB_CLIENT_ID: z.string(),
+	GITHUB_CLIENT_SECRET: z.string(),
+	SITE_URL: z.string(),
+})
+
+const serverEnv = envSchema.parse(process.env)
 
 // The component client has methods needed for integrating Convex with Better Auth,
 // as well as helper methods for general use.
@@ -15,7 +22,7 @@ export const authComponent = createClient<DataModel>(components.betterAuth)
 
 export const createAuth = (ctx: GenericCtx<DataModel>) => {
   return betterAuth({
-    baseURL: siteUrl,
+    baseURL: serverEnv.SITE_URL,
     database: authComponent.adapter(ctx),
     // Configure simple, non-verified email/password to get started
     emailAndPassword: {
@@ -24,8 +31,8 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
     },
     socialProviders: {
       github: {
-        clientId: process.env.GITHUB_CLIENT_ID!,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+        clientId: serverEnv.GITHUB_CLIENT_ID,
+        clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
         enabled: true,
       },
     },
