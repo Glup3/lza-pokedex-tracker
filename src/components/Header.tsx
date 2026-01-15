@@ -1,14 +1,16 @@
-import { Link } from '@tanstack/react-router'
-import { authClient } from '../lib/auth-client'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { Link, useRouteContext } from '@tanstack/react-router'
+import { authClient } from '../lib/auth-client'
 import { Button } from './ui/button'
 
 const HEADER_HEIGHT = '72px'
 
 export function Header() {
+	const { isAuthenticated } = useRouteContext({ from: '__root__' })
 	const { data: session } = useQuery({
 		queryKey: ['auth-session'],
 		queryFn: async () => authClient.getSession(),
+		enabled: isAuthenticated,
 	})
 
 	const signIn = useMutation({
@@ -34,10 +36,7 @@ export function Header() {
 		>
 			<div className="h-full flex items-center justify-between px-6 md:px-12">
 				{/* Logo/Brand */}
-				<Link
-					to="/"
-					className="flex items-baseline gap-3 group"
-				>
+				<Link to="/" className="flex items-baseline gap-3 group">
 					<span className="text-xl font-black text-white tracking-tighter group-hover:tracking-tight transition-all duration-300">
 						POKÉDEX
 					</span>
