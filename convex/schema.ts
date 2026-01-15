@@ -7,10 +7,6 @@ export default defineSchema({
     imageId: v.string(),
     price: v.number(),
   }),
-  todos: defineTable({
-    text: v.string(),
-    completed: v.boolean(),
-  }),
   caughtPokemon: defineTable({
     userId: v.string(),
     pokemonId: v.number(),
