@@ -4,20 +4,24 @@ import { Header, HEADER_HEIGHT } from '../components/Header'
 import { POKEMON_DATA } from '../data/pokemon-data'
 import { useConvexAuth, useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
+import { createServerFn } from '@tanstack/react-start'
 
 const SIGNIN_URL = '/api/auth/signin'
 
-export const Route = createFileRoute('/pokedex')({
-	component: PokedexTracker,
-})
-
-const mockPokemon = POKEMON_DATA.map((pokemon) => ({
+const getPokemons = createServerFn().handler(async () =>
+	POKEMON_DATA.map((pokemon) => ({
 		...pokemon,
 		location: 'Unknown',
 		caught: false,
 		favorite: false,
 		notes: '',
-	}))
+	})),
+)
+
+export const Route = createFileRoute('/pokedex')({
+	component: PokedexTracker,
+	loader: () => getPokemons(),
+})
 
 const allTypes = [
 	'Normal',
@@ -44,13 +48,16 @@ function PokedexTracker() {
 	const { isAuthenticated, isLoading: authLoading } = useConvexAuth()
 	const caughtPokemon = useQuery(api.caughtPokemon.getCaughtPokemon, {})
 	const toggleCaught = useMutation(api.caughtPokemon.toggleCaught)
+	const mockPokemon = Route.useLoaderData()
 
 	const [searchQuery, setSearchQuery] = useState('')
 	const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 	const [showOnlyCaught, setShowOnlyCaught] = useState(false)
 	const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
 	const [sortBy, setSortBy] = useState<'number' | 'name' | 'location'>('number')
-	const [togglingPokemonId, setTogglingPokemonId] = useState<number | null>(null)
+	const [togglingPokemonId, setTogglingPokemonId] = useState<number | null>(
+		null,
+	)
 	const [error, setError] = useState<string | null>(null)
 
 	const caughtPokemonSet = new Set(caughtPokemon ?? [])
@@ -92,7 +99,9 @@ function PokedexTracker() {
 		try {
 			await toggleCaught({ pokemonId })
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to update caught status')
+			setError(
+				err instanceof Error ? err.message : 'Failed to update caught status',
+			)
 		} finally {
 			setTogglingPokemonId(null)
 		}
@@ -101,173 +110,192 @@ function PokedexTracker() {
 	return (
 		<>
 			<Header />
-			<div className="min-h-screen bg-[#0a0a0a] text-white" style={{ paddingTop: HEADER_HEIGHT }}>
+			<div
+				className="min-h-screen bg-[#0a0a0a] text-white"
+				style={{ paddingTop: HEADER_HEIGHT }}
+			>
 				{/* Header */}
 				<header className="border-b border-white/10">
-				<div className="max-w-6xl mx-auto px-6 py-8">
-					<div className="flex items-baseline justify-between">
-						<div>
-							<h1 className="text-sm font-medium tracking-widest text-neutral-500 uppercase mb-1">
-								Legends: Z-A
-							</h1>
-							<p className="text-2xl font-light tracking-tight">Kalos Region</p>
+					<div className="max-w-6xl mx-auto px-6 py-8">
+						<div className="flex items-baseline justify-between">
+							<div>
+								<h1 className="text-sm font-medium tracking-widest text-neutral-500 uppercase mb-1">
+									Legends: Z-A
+								</h1>
+								<p className="text-2xl font-light tracking-tight">
+									Kalos Region
+								</p>
+							</div>
+							<div className="text-right">
+								<p className="text-3xl font-light tabular-nums">
+									{caughtCount}
+									<span className="text-neutral-600">
+										/{mockPokemon.length}
+									</span>
+								</p>
+								<p className="text-xs tracking-widest text-neutral-500 uppercase mt-1">
+									Caught
+								</p>
+							</div>
 						</div>
-						<div className="text-right">
-							<p className="text-3xl font-light tabular-nums">
-								{caughtCount}<span className="text-neutral-600">/{mockPokemon.length}</span>
-							</p>
-							<p className="text-xs tracking-widest text-neutral-500 uppercase mt-1">
-								Caught
-							</p>
+						{/* Auth Status */}
+						<div className="mt-4">
+							{authLoading ? (
+								<p className="text-xs text-neutral-600">Loading...</p>
+							) : !isAuthenticated ? (
+								<p className="text-xs text-neutral-600">
+									<a
+										href={SIGNIN_URL}
+										className="text-neutral-400 hover:text-white underline"
+									>
+										Sign in
+									</a>{' '}
+									to track your collection
+								</p>
+							) : (
+								<p className="text-xs text-neutral-500">
+									Tracking your collection
+								</p>
+							)}
+							{error && <p className="text-xs text-red-500 mt-2">{error}</p>}
 						</div>
 					</div>
-					{/* Auth Status */}
-					<div className="mt-4">
-						{authLoading ? (
-							<p className="text-xs text-neutral-600">Loading...</p>
-						) : !isAuthenticated ? (
-							<p className="text-xs text-neutral-600">
-								<a
-									href={SIGNIN_URL}
-									className="text-neutral-400 hover:text-white underline"
+				</header>
+
+				{/* Controls */}
+				<div className="border-b border-white/10 sticky top-0 bg-[#0a0a0a] z-10">
+					<div className="max-w-6xl mx-auto px-6 py-4">
+						<div className="flex flex-col gap-4">
+							{/* Search */}
+							<div className="flex gap-4">
+								<input
+									type="text"
+									placeholder="Search..."
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+									className="flex-1 bg-transparent border-none text-white placeholder:text-neutral-600 focus:outline-none text-sm"
+								/>
+								<select
+									value={sortBy}
+									onChange={(e) => setSortBy(e.target.value as any)}
+									className="bg-transparent text-neutral-500 text-xs tracking-widest uppercase focus:outline-none cursor-pointer"
 								>
-									Sign in
-								</a>
-								{' '}to track your collection
-							</p>
-						) : (
-							<p className="text-xs text-neutral-500">Tracking your collection</p>
-						)}
-						{error && (
-							<p className="text-xs text-red-500 mt-2">{error}</p>
-						)}
-					</div>
-				</div>
-			</header>
+									<option value="number" className="bg-[#0a0a0a]">
+										By Number
+									</option>
+									<option value="name" className="bg-[#0a0a0a]">
+										By Name
+									</option>
+									<option value="location" className="bg-[#0a0a0a]">
+										By Location
+									</option>
+								</select>
+							</div>
 
-			{/* Controls */}
-			<div className="border-b border-white/10 sticky top-0 bg-[#0a0a0a] z-10">
-				<div className="max-w-6xl mx-auto px-6 py-4">
-					<div className="flex flex-col gap-4">
-						{/* Search */}
-						<div className="flex gap-4">
-							<input
-								type="text"
-								placeholder="Search..."
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className="flex-1 bg-transparent border-none text-white placeholder:text-neutral-600 focus:outline-none text-sm"
-							/>
-							<select
-								value={sortBy}
-								onChange={(e) => setSortBy(e.target.value as any)}
-								className="bg-transparent text-neutral-500 text-xs tracking-widest uppercase focus:outline-none cursor-pointer"
-							>
-								<option value="number" className="bg-[#0a0a0a]">
-									By Number
-								</option>
-								<option value="name" className="bg-[#0a0a0a]">
-									By Name
-								</option>
-								<option value="location" className="bg-[#0a0a0a]">
-									By Location
-								</option>
-							</select>
-						</div>
-
-						{/* Filters */}
-						<div className="flex items-center gap-6 text-xs">
-							<button
-								onClick={() => setShowOnlyCaught(!showOnlyCaught)}
-								className={`tracking-widest uppercase transition-colors ${
-									showOnlyCaught ? 'text-white' : 'text-neutral-600 hover:text-neutral-400'
-								}`}
-							>
-								Caught
-							</button>
-							<button
-								onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-								className={`tracking-widest uppercase transition-colors ${
-									showOnlyFavorites
-										? 'text-white'
-										: 'text-neutral-600 hover:text-neutral-400'
-								}`}
-							>
-								Favorites
-							</button>
-							<div className="flex items-center gap-2 flex-wrap">
-								{selectedTypes.length > 0 ? (
-									<>
-										{selectedTypes.map((type) => (
+							{/* Filters */}
+							<div className="flex items-center gap-6 text-xs">
+								<button
+									type="button"
+									onClick={() => setShowOnlyCaught(!showOnlyCaught)}
+									className={`tracking-widest uppercase transition-colors ${
+										showOnlyCaught
+											? 'text-white'
+											: 'text-neutral-600 hover:text-neutral-400'
+									}`}
+								>
+									Caught
+								</button>
+								<button
+									type="button"
+									onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+									className={`tracking-widest uppercase transition-colors ${
+										showOnlyFavorites
+											? 'text-white'
+											: 'text-neutral-600 hover:text-neutral-400'
+									}`}
+								>
+									Favorites
+								</button>
+								<div className="flex items-center gap-2 flex-wrap">
+									{selectedTypes.length > 0 ? (
+										<>
+											{selectedTypes.map((type) => (
+												<button
+													type="button"
+													key={type}
+													onClick={() =>
+														setSelectedTypes(
+															selectedTypes.filter((t) => t !== type),
+														)
+													}
+													className="text-neutral-400 hover:text-white transition-colors"
+												>
+													{type} ×
+												</button>
+											))}
 											<button
+												type="button"
+												onClick={() => setSelectedTypes([])}
+												className="text-neutral-600 hover:text-neutral-400 transition-colors"
+											>
+												Clear
+											</button>
+										</>
+									) : (
+										allTypes.map((type) => (
+											<button
+												type="button"
 												key={type}
 												onClick={() =>
-													setSelectedTypes(selectedTypes.filter((t) => t !== type))
+													setSelectedTypes([...selectedTypes, type] as string[])
 												}
-												className="text-neutral-400 hover:text-white transition-colors"
+												className="text-neutral-700 hover:text-neutral-400 transition-colors"
 											>
-												{type} ×
+												{type}
 											</button>
-										))}
-										<button
-											onClick={() => setSelectedTypes([])}
-											className="text-neutral-600 hover:text-neutral-400 transition-colors"
-										>
-											Clear
-										</button>
-									</>
-								) : (
-									allTypes.map((type) => (
-										<button
-											key={type}
-											onClick={() =>
-												setSelectedTypes([...selectedTypes, type] as string[])
-											}
-											className="text-neutral-700 hover:text-neutral-400 transition-colors"
-										>
-											{type}
-										</button>
-									))
-								)}
+										))
+									)}
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
 
-			{/* Results */}
-			<div className="max-w-6xl mx-auto px-6 py-4">
-				<p className="text-xs tracking-widest text-neutral-600 uppercase mb-6">
-					{filteredPokemon.length} of {mockPokemon.length}
-				</p>
+				{/* Results */}
+				<div className="max-w-6xl mx-auto px-6 py-4">
+					<p className="text-xs tracking-widest text-neutral-600 uppercase mb-6">
+						{filteredPokemon.length} of {mockPokemon.length}
+					</p>
 
-				{filteredPokemon.length === 0 ? (
-					<div className="text-center py-32">
-						<p className="text-neutral-600 text-sm">No results</p>
-					</div>
-				) : (
-					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-px bg-white/5">
-						{filteredPokemon.map((pokemon) => (
-							<PokemonCard
-								key={pokemon.id}
-								pokemon={pokemon}
-								isCaught={caughtPokemonSet.has(pokemon.id)}
-								isAuthenticated={isAuthenticated}
-								isToggling={togglingPokemonId === pokemon.id}
-								onToggleCaught={() => handleToggleCaught(pokemon.id)}
-							/>
-						))}
-					</div>
-				)}
-			</div>
-
-			{/* Footer */}
-			<footer className="border-t border-white/10 mt-12">
-				<div className="max-w-6xl mx-auto px-6 py-6">
-					<p className="text-xs text-neutral-700">Pokédex Tracker • Kalos Region</p>
+					{filteredPokemon.length === 0 ? (
+						<div className="text-center py-32">
+							<p className="text-neutral-600 text-sm">No results</p>
+						</div>
+					) : (
+						<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-px bg-white/5">
+							{filteredPokemon.map((pokemon) => (
+								<PokemonCard
+									key={pokemon.id}
+									pokemon={pokemon}
+									isCaught={caughtPokemonSet.has(pokemon.id)}
+									isAuthenticated={isAuthenticated}
+									isToggling={togglingPokemonId === pokemon.id}
+									onToggleCaught={() => handleToggleCaught(pokemon.id)}
+								/>
+							))}
+						</div>
+					)}
 				</div>
-			</footer>
-		</div>
+
+				{/* Footer */}
+				<footer className="border-t border-white/10 mt-12">
+					<div className="max-w-6xl mx-auto px-6 py-6">
+						<p className="text-xs text-neutral-700">
+							Pokédex Tracker • Kalos Region
+						</p>
+					</div>
+				</footer>
+			</div>
 		</>
 	)
 }
@@ -279,7 +307,7 @@ function PokemonCard({
 	isToggling,
 	onToggleCaught,
 }: {
-	pokemon: typeof mockPokemon[0]
+	pokemon: Awaited<ReturnType<typeof getPokemons>>[number]
 	isCaught: boolean
 	isAuthenticated: boolean
 	isToggling: boolean
@@ -295,6 +323,8 @@ function PokemonCard({
 	}
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
+		// biome-ignore lint/a11y/useAriaPropsSupportedByRole: <explanation>
 		<div
 			className="group relative bg-[#0a0a0a] p-4 hover:bg-white/[0.02] transition-colors flex flex-col cursor-pointer"
 			onClick={isAuthenticated && !isToggling ? onToggleCaught : undefined}
@@ -302,7 +332,11 @@ function PokemonCard({
 			role={isAuthenticated ? 'button' : undefined}
 			tabIndex={isAuthenticated ? 0 : undefined}
 			aria-pressed={isAuthenticated ? isCaught : undefined}
-			aria-label={isAuthenticated ? `${pokemon.name}, ${isCaught ? 'caught' : 'not caught'}` : pokemon.name}
+			aria-label={
+				isAuthenticated
+					? `${pokemon.name}, ${isCaught ? 'caught' : 'not caught'}`
+					: pokemon.name
+			}
 		>
 			{/* Status indicator */}
 			<div className="flex justify-between items-start mb-3">
@@ -323,6 +357,7 @@ function PokemonCard({
 				<img
 					src={pokemon.image}
 					alt={pokemon.name}
+					loading="lazy"
 					className="w-full h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity"
 				/>
 			</div>
