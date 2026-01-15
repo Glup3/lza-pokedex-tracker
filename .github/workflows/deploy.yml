@@ -29,6 +29,7 @@ jobs:
         run: pnpm convex deploy --yes
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_CLOUD_URL: ${{ vars.CONVEX_CLOUD_URL }}
 
   build-and-deploy:
     runs-on: self-hosted
